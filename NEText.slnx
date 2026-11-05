@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NEText.Api/NEText.Api.csproj" />
+  </Folder>
+</Solution>

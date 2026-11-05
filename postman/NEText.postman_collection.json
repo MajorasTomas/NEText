@@ -1,0 +1,36 @@
+{
+  "info": {
+    "name": "NEText API",
+    "description": "Requests for the NEText messenger API. Start the database (`docker compose up -d`) and the API (`dotnet run --project src/NEText.Api`, listens on http://localhost:5180) first.\n\nThe folders are ordered so the whole collection can be run top-to-bottom with the Collection Runner.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5180" }
+  ],
+  "item": [
+    {
+      "name": "0 - Health",
+      "item": [
+        {
+          "name": "Health check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Status field is ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/health"
+          }
+        }
+      ]
+    }
+  ]
+}
