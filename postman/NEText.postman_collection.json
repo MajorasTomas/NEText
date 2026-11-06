@@ -1,33 +1,102 @@
 {
   "info": {
     "name": "NEText API",
-    "description": "Requests for the NEText messenger API. Start the database (`docker compose up -d`) and the API (`dotnet run --project src/NEText.Api`, listens on http://localhost:5180) first.\n\nThe folders are ordered so the whole collection can be run top-to-bottom with the Collection Runner.",
+    "description": "Requests for the NEText messenger API. Start the database (`docker compose up -d`) and the API (`dotnet run --project src/NEText.Api`, listens on http://localhost:5180) first.\n\nThe only scripts save ids from responses into collection variables (e.g. {{aliceId}}), so later requests can use them.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5180" }
+    { "key": "baseUrl", "value": "http://localhost:5180" },
+    { "key": "aliceId", "value": "" },
+    { "key": "bobId", "value": "" }
   ],
   "item": [
     {
-      "name": "0 - Health",
+      "name": "Health",
       "item": [
         {
           "name": "Health check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register (Alice)",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Status is 200', () => pm.response.to.have.status(200));",
-                  "pm.test('Status field is ok', () => pm.expect(pm.response.json().status).to.eql('ok'));"
+                  "// Save the new user's id for other requests ({{aliceId}})",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('aliceId', pm.response.json().id);"
                 ]
               }
             }
           ],
           "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"username\": \"Alice\",\n  \"password\": \"password123\",\n  \"displayName\": \"Alice Wonder\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Register (Bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the new user's id for other requests ({{bobId}})",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('bobId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"username\": \"bob\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get user by id",
+          "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/api/health"
+            "url": "{{baseUrl}}/api/users/{{aliceId}}"
+          }
+        },
+        {
+          "name": "Search users",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/users/search?q=al",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "search"],
+              "query": [{ "key": "q", "value": "al" }]
+            }
           }
         }
       ]

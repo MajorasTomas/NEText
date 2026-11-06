@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using NEText.Api.Entities;
 
 namespace NEText.Api.Data;
 
@@ -10,11 +11,22 @@ public class AppDbContext : DbContext
     {
     }
 
-    // Tables go here, one line each, e.g.:
-    // public DbSet<User> Users => Set<User>();
+    public DbSet<User> Users => Set<User>();
 
     // Fine-tune how entities map to tables (column sizes, required fields, indexes, relationships).
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(user => user.Id);
+
+            entity.Property(user => user.Username).HasMaxLength(32);
+            entity.Property(user => user.Email).HasMaxLength(254);
+            entity.Property(user => user.DisplayName).HasMaxLength(64);
+
+            // Unique indexes: the database itself refuses a second row with the same value.
+            entity.HasIndex(user => user.Username).IsUnique();
+            entity.HasIndex(user => user.Email).IsUnique();
+        });
     }
 }
