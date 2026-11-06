@@ -12,7 +12,8 @@
     { "key": "baseUrl", "value": "http://localhost:5180" },
     { "key": "token", "value": "" },
     { "key": "aliceId", "value": "" },
-    { "key": "bobId", "value": "" }
+    { "key": "bobId", "value": "" },
+    { "key": "requestId", "value": "" }
   ],
   "item": [
     {
@@ -170,6 +171,86 @@
               "path": ["api", "users", "search"],
               "query": [{ "key": "q", "value": "al" }]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Friends",
+      "description": "Requests act as whoever logged in last. Typical flow: Login (Alice) -> Send request (to Bob) -> Login (Bob) -> Incoming -> Accept or Decline. Cancel is done by the sender (Alice).",
+      "item": [
+        {
+          "name": "Send request (to Bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the request id for Accept/Decline/Cancel ({{requestId}})",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('requestId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toUserId\": \"{{bobId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/friend-requests"
+          }
+        },
+        {
+          "name": "Incoming requests",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/friend-requests/incoming"
+          }
+        },
+        {
+          "name": "Outgoing requests",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/friend-requests/outgoing"
+          }
+        },
+        {
+          "name": "Accept request",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/friend-requests/{{requestId}}/accept"
+          }
+        },
+        {
+          "name": "Decline request",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/friend-requests/{{requestId}}/decline"
+          }
+        },
+        {
+          "name": "Cancel request",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/friend-requests/{{requestId}}"
+          }
+        },
+        {
+          "name": "My friends",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/friends"
+          }
+        },
+        {
+          "name": "Remove friend (Bob)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/friends/{{bobId}}"
           }
         }
       ]

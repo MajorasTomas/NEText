@@ -14,6 +14,13 @@ public abstract class AppException : Exception
     }
 }
 
+// 400: the request makes no sense (beyond simple field validation), e.g. sending a friend request to yourself
+public class BadRequestException : AppException
+{
+    public BadRequestException(string message)
+        : base(StatusCodes.Status400BadRequest, "Bad Request", message) { }
+}
+
 // 401: not logged in, or wrong credentials
 public class UnauthorizedException : AppException
 {

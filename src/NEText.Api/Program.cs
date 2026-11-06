@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +14,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 // ---------- 1. Register services (dependency injection container) ----------
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    // Enums in JSON as text ("Pending") instead of numbers (0), in both requests and responses.
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 // Generated links (e.g. the Location header) are lowercase: /api/users instead of /api/Users
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -73,6 +76,7 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 
 // Our own services. Scoped because they use AppDbContext (also scoped).
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IFriendService, FriendService>();
 
 var app = builder.Build();
 
