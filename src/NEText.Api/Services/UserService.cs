@@ -42,9 +42,6 @@ public class UserService : IUserService
             Id = Guid.CreateVersion7(), // time-ordered GUID: unique and index-friendly
             Username = username,
             Email = email,
-            DisplayName = string.IsNullOrWhiteSpace(request.DisplayName)
-                ? request.Username.Trim()
-                : request.DisplayName.Trim(),
             CreatedAtUtc = DateTime.UtcNow
         };
         // Generates a random salt and hashes the password with it; both end up in this one string.
@@ -78,14 +75,14 @@ public class UserService : IUserService
         var pattern = $"%{query.Trim()}%";
 
         // ILIKE = case-insensitive LIKE (PostgreSQL). Becomes:
-        // WHERE "Username" ILIKE @pattern OR "DisplayName" ILIKE @pattern ORDER BY "Username" LIMIT 20
+        // WHERE "Username" ILIKE @pattern ORDER BY "Username" LIMIT 20
         return await _db.Users
-            .Where(u => EF.Functions.ILike(u.Username, pattern) || EF.Functions.ILike(u.DisplayName, pattern))
+            .Where(u => EF.Functions.ILike(u.Username, pattern))
             .OrderBy(u => u.Username)
             .Take(MaxSearchResults)
-            .Select(u => new UserDto(u.Id, u.Username, u.DisplayName, u.CreatedAtUtc))
+            .Select(u => new UserDto(u.Id, u.Username, u.CreatedAtUtc))
             .ToListAsync();
     }
 
-    private static UserDto ToDto(User u) => new(u.Id, u.Username, u.DisplayName, u.CreatedAtUtc);
+    private static UserDto ToDto(User u) => new(u.Id, u.Username, u.CreatedAtUtc);
 }

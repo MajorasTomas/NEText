@@ -44,7 +44,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"username\": \"Alice\",\n  \"password\": \"password123\",\n  \"displayName\": \"Alice Wonder\"\n}",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"username\": \"Alice\",\n  \"password\": \"password123\"\n}",
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/api/auth/register"

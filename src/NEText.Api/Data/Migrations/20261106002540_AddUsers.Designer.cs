@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NEText.Api.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261105212220_AddUsers")]
+    [Migration("20261106002540_AddUsers")]
     partial class AddUsers
     {
         /// <inheritdoc />
@@ -33,11 +33,6 @@ namespace NEText.Api.Data.Migrations
 
                     b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("DisplayName")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("Email")
                         .IsRequired()

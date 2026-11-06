@@ -22,7 +22,6 @@ public class AppDbContext : DbContext
 
             entity.Property(user => user.Username).HasMaxLength(32);
             entity.Property(user => user.Email).HasMaxLength(254);
-            entity.Property(user => user.DisplayName).HasMaxLength(64);
 
             // Unique indexes: the database itself refuses a second row with the same value.
             entity.HasIndex(user => user.Username).IsUnique();

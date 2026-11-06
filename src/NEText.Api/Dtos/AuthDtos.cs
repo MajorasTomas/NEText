@@ -13,9 +13,5 @@ public record RegisterRequest(
     string Username,
 
     [Required, MinLength(8), MaxLength(100)]
-    string Password,
-
-    // Optional; defaults to the username as typed (e.g. "Alice")
-    [MaxLength(64)]
-    string? DisplayName
+    string Password
 );

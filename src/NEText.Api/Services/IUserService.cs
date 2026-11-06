@@ -10,6 +10,6 @@ public interface IUserService
     // Throws NotFoundException if there is no such user.
     Task<UserDto> GetByIdAsync(Guid id);
 
-    // Case-insensitive match on username or display name. Returns at most 20 users.
+    // Case-insensitive match on username. Returns at most 20 users.
     Task<List<UserDto>> SearchAsync(string query);
 }
