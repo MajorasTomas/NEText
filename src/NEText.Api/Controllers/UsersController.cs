@@ -1,11 +1,14 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NEText.Api.Dtos;
 using NEText.Api.Services;
 
 namespace NEText.Api.Controllers;
 
+// [Authorize] on the class = every endpoint here requires a valid token (otherwise 401).
 [ApiController]
+[Authorize]
 [Route("api/users")]
 public class UsersController : ControllerBase
 {

@@ -14,6 +14,13 @@ public abstract class AppException : Exception
     }
 }
 
+// 401: not logged in, or wrong credentials
+public class UnauthorizedException : AppException
+{
+    public UnauthorizedException(string message)
+        : base(StatusCodes.Status401Unauthorized, "Unauthorized", message) { }
+}
+
 // 404: the requested thing doesn't exist
 public class NotFoundException : AppException
 {

@@ -14,11 +14,13 @@ public class UserService : IUserService
 
     private readonly AppDbContext _db;
     private readonly IPasswordHasher<User> _passwordHasher;
+    private readonly ITokenService _tokens;
 
-    public UserService(AppDbContext db, IPasswordHasher<User> passwordHasher)
+    public UserService(AppDbContext db, IPasswordHasher<User> passwordHasher, ITokenService tokens)
     {
         _db = db;
         _passwordHasher = passwordHasher;
+        _tokens = tokens;
     }
 
     public async Task<UserDto> RegisterAsync(RegisterRequest request)
@@ -62,6 +64,43 @@ public class UserService : IUserService
         return ToDto(user);
     }
 
+    public async Task<LoginResponse> LoginAsync(LoginRequest request)
+    {
+        var email = request.Email.Trim().ToLowerInvariant();
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+        // Re-hashes the entered password with the salt stored inside PasswordHash and compares.
+        var result = user is null
+            ? PasswordVerificationResult.Failed
+            : _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
+
+        // Same message whether the email or the password was wrong,
+        // so nobody can use login to find out which emails are registered.
+        if (user is null || result == PasswordVerificationResult.Failed)
+        {
+            throw new UnauthorizedException("Invalid email or password.");
+        }
+
+        // Correct password, but hashed with older settings (e.g. fewer iterations): upgrade the stored hash.
+        if (result == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
+            await _db.SaveChangesAsync();
+        }
+
+        var token = _tokens.CreateToken(user);
+        return new LoginResponse(token.Token, token.ExpiresAtUtc, ToCurrentUserDto(user));
+    }
+
+    public async Task<CurrentUserDto> GetCurrentUserAsync(Guid userId)
+    {
+        // A valid token for a user that no longer exists (e.g. deleted from the DB) is treated as not logged in.
+        var user = await _db.Users.FindAsync(userId)
+            ?? throw new UnauthorizedException("User from token no longer exists.");
+
+        return ToCurrentUserDto(user);
+    }
+
     public async Task<UserDto> GetByIdAsync(Guid id)
     {
         var user = await _db.Users.FindAsync(id)
@@ -85,4 +124,6 @@ public class UserService : IUserService
     }
 
     private static UserDto ToDto(User u) => new(u.Id, u.Username, u.CreatedAtUtc);
+
+    private static CurrentUserDto ToCurrentUserDto(User u) => new(u.Id, u.Username, u.Email, u.CreatedAtUtc);
 }

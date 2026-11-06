@@ -1,11 +1,16 @@
 {
   "info": {
     "name": "NEText API",
-    "description": "Requests for the NEText messenger API. Start the database (`docker compose up -d`) and the API (`dotnet run --project src/NEText.Api`, listens on http://localhost:5180) first.\n\nThe only scripts save ids from responses into collection variables (e.g. {{aliceId}}), so later requests can use them.",
+    "description": "Requests for the NEText messenger API. Start the database (`docker compose up -d`) and the API (`dotnet run --project src/NEText.Api`, listens on http://localhost:5180) first.\n\nAuth: every request sends `Authorization: Bearer {{token}}` (set on the collection). Run a Login request first; it saves the token. Whichever Login you ran last is the current user. Health/Register/Login are set to No Auth.\n\nThe only scripts save values from responses into collection variables (token, ids).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
   },
   "variable": [
     { "key": "baseUrl", "value": "http://localhost:5180" },
+    { "key": "token", "value": "" },
     { "key": "aliceId", "value": "" },
     { "key": "bobId", "value": "" }
   ],
@@ -16,6 +21,7 @@
         {
           "name": "Health check",
           "request": {
+            "auth": { "type": "noauth" },
             "method": "GET",
             "url": "{{baseUrl}}/api/health"
           }
@@ -40,6 +46,7 @@
             }
           ],
           "request": {
+            "auth": { "type": "noauth" },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
@@ -65,6 +72,7 @@
             }
           ],
           "request": {
+            "auth": { "type": "noauth" },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
@@ -73,6 +81,71 @@
               "options": { "raw": { "language": "json" } }
             },
             "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Login (Alice)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the token: every request in the collection sends it as 'Authorization: Bearer {{token}}'",
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('token', pm.response.json().accessToken);",
+                  "  pm.collectionVariables.set('aliceId', pm.response.json().user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login (Bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the token: every request in the collection sends it as 'Authorization: Bearer {{token}}'",
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('token', pm.response.json().accessToken);",
+                  "  pm.collectionVariables.set('bobId', pm.response.json().user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Me (current user)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me"
           }
         }
       ]
@@ -84,7 +157,7 @@
           "name": "Get user by id",
           "request": {
             "method": "GET",
-            "url": "{{baseUrl}}/api/users/{{aliceId}}"
+            "url": "{{baseUrl}}/api/users/{{bobId}}"
           }
         },
         {

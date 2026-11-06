@@ -15,3 +15,12 @@ public record RegisterRequest(
     [Required, MinLength(8), MaxLength(100)]
     string Password
 );
+
+// Body of POST /api/auth/login.
+public record LoginRequest(
+    [Required] string Email,
+    [Required] string Password
+);
+
+// Response of POST /api/auth/login. Send AccessToken back as "Authorization: Bearer <token>".
+public record LoginResponse(string AccessToken, DateTime ExpiresAtUtc, CurrentUserDto User);
