@@ -18,14 +18,12 @@ public class FriendsController : ControllerBase
         _friends = friends;
     }
 
-    // GET /api/friends -> 200 + my friends
     [HttpGet]
     public async Task<ActionResult<List<FriendDto>>> GetAll()
     {
         return Ok(await _friends.GetFriendsAsync(User.GetUserId()));
     }
 
-    // DELETE /api/friends/{userId} -> 204 unfriended, 404 if not friends
     [HttpDelete("{userId:guid}")]
     public async Task<IActionResult> Remove(Guid userId)
     {

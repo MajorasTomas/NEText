@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "NEText API",
-    "description": "Requests for the NEText messenger API. Start the database (`docker compose up -d`) and the API (`dotnet run --project src/NEText.Api`, listens on http://localhost:5180) first.\n\nAuth: every request sends `Authorization: Bearer {{token}}` (set on the collection). Run a Login request first; it saves the token. Whichever Login you ran last is the current user. Health/Register/Login are set to No Auth.\n\nThe only scripts save values from responses into collection variables (token, ids).",
+    "description": "Start the database (docker compose up -d) and the API (dotnet run --project src/NEText.Api) first.\n\nRun Login first: its token is sent with every request. Search users stores the first result as {{userId}}, which is the target of the friend, conversation and group requests.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -24,11 +24,11 @@
       "value": ""
     },
     {
-      "key": "aliceId",
+      "key": "myId",
       "value": ""
     },
     {
-      "key": "bobId",
+      "key": "userId",
       "value": ""
     },
     {
@@ -40,15 +40,11 @@
       "value": ""
     },
     {
-      "key": "messageId",
-      "value": ""
-    },
-    {
-      "key": "carolId",
-      "value": ""
-    },
-    {
       "key": "groupId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
       "value": ""
     }
   ],
@@ -72,19 +68,7 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Register (Alice)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Save the new user's id for other requests ({{aliceId}})",
-                  "if (pm.response.code === 201) pm.collectionVariables.set('aliceId', pm.response.json().id);"
-                ]
-              }
-            }
-          ],
+          "name": "Register",
           "request": {
             "auth": {
               "type": "noauth"
@@ -98,7 +82,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"username\": \"Alice\",\n  \"password\": \"password123\"\n}",
+              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"username\": \"alice\",\n  \"password\": \"password123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -109,91 +93,16 @@
           }
         },
         {
-          "name": "Register (Bob)",
+          "name": "Login",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Save the new user's id for other requests ({{bobId}})",
-                  "if (pm.response.code === 201) pm.collectionVariables.set('bobId', pm.response.json().id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"username\": \"bob\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/auth/register"
-          }
-        },
-        {
-          "name": "Register (Carol)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Save the new user's id for other requests ({{carolId}})",
-                  "if (pm.response.code === 201) pm.collectionVariables.set('carolId', pm.response.json().id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"carol@example.com\",\n  \"username\": \"carol\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/auth/register"
-          }
-        },
-        {
-          "name": "Login (Alice)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Save the token: every request in the collection sends it as 'Authorization: Bearer {{token}}'",
                   "if (pm.response.code === 200) {",
                   "  pm.collectionVariables.set('token', pm.response.json().accessToken);",
-                  "  pm.collectionVariables.set('aliceId', pm.response.json().user.id);",
+                  "  pm.collectionVariables.set('myId', pm.response.json().user.id);",
                   "}"
                 ]
               }
@@ -223,87 +132,7 @@
           }
         },
         {
-          "name": "Login (Bob)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Save the token: every request in the collection sends it as 'Authorization: Bearer {{token}}'",
-                  "if (pm.response.code === 200) {",
-                  "  pm.collectionVariables.set('token', pm.response.json().accessToken);",
-                  "  pm.collectionVariables.set('bobId', pm.response.json().user.id);",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/auth/login"
-          }
-        },
-        {
-          "name": "Login (Carol)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Save the token: every request in the collection sends it as 'Authorization: Bearer {{token}}'",
-                  "if (pm.response.code === 200) {",
-                  "  pm.collectionVariables.set('token', pm.response.json().accessToken);",
-                  "  pm.collectionVariables.set('carolId', pm.response.json().user.id);",
-                  "}"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"carol@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/auth/login"
-          }
-        },
-        {
-          "name": "Me (current user)",
+          "name": "Me",
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/api/auth/me"
@@ -315,18 +144,22 @@
       "name": "Users",
       "item": [
         {
-          "name": "Get user by id",
-          "request": {
-            "method": "GET",
-            "url": "{{baseUrl}}/api/users/{{bobId}}"
-          }
-        },
-        {
           "name": "Search users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 && pm.response.json().length > 0) pm.collectionVariables.set('userId', pm.response.json()[0].id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{baseUrl}}/api/users/search?q=al",
+              "raw": "{{baseUrl}}/api/users/search?q=bob",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -338,27 +171,32 @@
               "query": [
                 {
                   "key": "q",
-                  "value": "al"
+                  "value": "bob"
                 }
               ]
             }
+          }
+        },
+        {
+          "name": "Get user by id",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/users/{{userId}}"
           }
         }
       ]
     },
     {
       "name": "Friends",
-      "description": "Requests act as whoever logged in last. Typical flow: Login (Alice) -> Send request (to Bob) -> Login (Bob) -> Incoming -> Accept or Decline. Cancel is done by the sender (Alice).",
       "item": [
         {
-          "name": "Send request (to Bob)",
+          "name": "Send friend request",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Save the request id for Accept/Decline/Cancel ({{requestId}})",
                   "if (pm.response.code === 201) pm.collectionVariables.set('requestId', pm.response.json().id);"
                 ]
               }
@@ -374,41 +212,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"toUserId\": \"{{bobId}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/friend-requests"
-          }
-        },
-        {
-          "name": "Send request (to Carol)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "// Save the request id for Accept/Decline/Cancel ({{requestId}})",
-                  "if (pm.response.code === 201) pm.collectionVariables.set('requestId', pm.response.json().id);"
-                ]
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"toUserId\": \"{{carolId}}\"\n}",
+              "raw": "{\n  \"toUserId\": \"{{userId}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -420,6 +224,17 @@
         },
         {
           "name": "Incoming requests",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200 && pm.response.json().length > 0) pm.collectionVariables.set('requestId', pm.response.json()[0].id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/api/friend-requests/incoming"
@@ -461,27 +276,25 @@
           }
         },
         {
-          "name": "Remove friend (Bob)",
+          "name": "Remove friend",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/api/friends/{{bobId}}"
+            "url": "{{baseUrl}}/api/friends/{{userId}}"
           }
         }
       ]
     },
     {
       "name": "Conversations",
-      "description": "Alice and Bob must be friends to start a conversation. Typical flow: Login (Alice) -> Start conversation (with Bob) -> Send message -> Login (Bob) -> My conversations (unread count) -> Get messages -> Mark as read.",
       "item": [
         {
-          "name": "Start conversation (with Bob)",
+          "name": "Start direct conversation",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Save the conversation id for the requests below ({{conversationId}}). 201 = new, 200 = already existed.",
                   "if (pm.response.code === 200 || pm.response.code === 201) pm.collectionVariables.set('conversationId', pm.response.json().id);"
                 ]
               }
@@ -497,7 +310,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{bobId}}\"\n}",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -585,7 +398,6 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Save the message id for Edit/Delete ({{messageId}})",
                   "if (pm.response.code === 201) pm.collectionVariables.set('messageId', pm.response.json().id);"
                 ]
               }
@@ -612,7 +424,7 @@
           }
         },
         {
-          "name": "Get messages (newest first)",
+          "name": "Get messages",
           "request": {
             "method": "GET",
             "url": {
@@ -666,7 +478,6 @@
         {
           "name": "Get unread messages",
           "request": {
-            "description": "Messages from others sent after you last used Mark as read. Does not mark them as read.",
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?unreadOnly=true",
@@ -691,7 +502,6 @@
         {
           "name": "Get older messages (before)",
           "request": {
-            "description": "Set 'before' to the id of the OLDEST message you already have (the last item of the previous page).",
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=50&before={{messageId}}",
@@ -750,17 +560,15 @@
     },
     {
       "name": "Groups",
-      "description": "A group is a conversation: after creating one, the Messages folder and 'Mark as read' work on it (Create group also sets {{conversationId}}). Admin-only: add/remove members, rename, change roles, delete. You can only add your friends. Typical flow: make Alice friends with Bob and Carol, Login (Alice) -> Create group (with Bob) -> Add member (Carol) -> Send message -> Login (Carol) -> Send message.",
       "item": [
         {
-          "name": "Create group (with Bob)",
+          "name": "Create group",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "// Save the group id ({{groupId}}) and make it the current conversation for the Messages folder",
                   "if (pm.response.code === 201) {",
                   "  pm.collectionVariables.set('groupId', pm.response.json().id);",
                   "  pm.collectionVariables.set('conversationId', pm.response.json().id);",
@@ -779,7 +587,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Weekend trip\",\n  \"memberIds\": [\"{{bobId}}\"]\n}",
+              "raw": "{\n  \"name\": \"Weekend trip\",\n  \"memberIds\": [\n    \"{{userId}}\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -845,7 +653,7 @@
           }
         },
         {
-          "name": "Add member (Carol)",
+          "name": "Add member",
           "request": {
             "method": "POST",
             "header": [
@@ -856,7 +664,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{carolId}}\"\n}",
+              "raw": "{\n  \"userId\": \"{{userId}}\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -867,14 +675,14 @@
           }
         },
         {
-          "name": "Remove member (Carol)",
+          "name": "Remove member",
           "request": {
             "method": "DELETE",
-            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{carolId}}"
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{userId}}"
           }
         },
         {
-          "name": "Make admin (Bob)",
+          "name": "Change member role",
           "request": {
             "method": "PUT",
             "header": [
@@ -892,29 +700,7 @@
                 }
               }
             },
-            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{bobId}}/role"
-          }
-        },
-        {
-          "name": "Make member (Bob)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"role\": \"Member\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{bobId}}/role"
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{userId}}/role"
           }
         },
         {

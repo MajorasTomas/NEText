@@ -1,15 +1,13 @@
-# Local development database. Start:  docker compose up -d    Stop:  docker compose down
-# Data lives in the "pgdata" volume, so it survives restarts. Wipe everything:  docker compose down -v
 services:
   db:
     image: postgres:18
     container_name: netext-db
     environment:
       POSTGRES_USER: netext
-      POSTGRES_PASSWORD: netext_dev_password   # local dev only, never use a real password here
+      POSTGRES_PASSWORD: netext_dev_password
       POSTGRES_DB: netext
     ports:
-      - "5432:5432"          # localhost:5432 on your PC -> port 5432 inside the container
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql
     healthcheck:

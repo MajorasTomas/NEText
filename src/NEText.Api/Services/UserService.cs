@@ -25,11 +25,9 @@ public class UserService : IUserService
 
     public async Task<UserDto> RegisterAsync(RegisterRequest request)
     {
-        // Normalize, so "Alice@Mail.com " and "alice@mail.com" count as the same email.
         var email = request.Email.Trim().ToLowerInvariant();
         var username = request.Username.Trim().ToLowerInvariant();
 
-        // Friendly error messages for the common case.
         if (await _db.Users.AnyAsync(u => u.Username == username))
         {
             throw new ConflictException("Username is already taken.");
@@ -41,12 +39,11 @@ public class UserService : IUserService
 
         var user = new User
         {
-            Id = Guid.CreateVersion7(), // time-ordered GUID: unique and index-friendly
+            Id = Guid.CreateVersion7(),
             Username = username,
             Email = email,
             CreatedAtUtc = DateTime.UtcNow
         };
-        // Generates a random salt and hashes the password with it; both end up in this one string.
         user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
 
         _db.Users.Add(user);
@@ -56,8 +53,6 @@ public class UserService : IUserService
         }
         catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
         {
-            // Safety net: two requests registered the same name at the same moment, so both passed
-            // the checks above. The unique index in the database rejected the second one.
             throw new ConflictException("Username or email is already taken.");
         }
 
@@ -69,19 +64,15 @@ public class UserService : IUserService
         var email = request.Email.Trim().ToLowerInvariant();
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-        // Re-hashes the entered password with the salt stored inside PasswordHash and compares.
         var result = user is null
             ? PasswordVerificationResult.Failed
             : _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, request.Password);
 
-        // Same message whether the email or the password was wrong,
-        // so nobody can use login to find out which emails are registered.
         if (user is null || result == PasswordVerificationResult.Failed)
         {
             throw new UnauthorizedException("Invalid email or password.");
         }
 
-        // Correct password, but hashed with older settings (e.g. fewer iterations): upgrade the stored hash.
         if (result == PasswordVerificationResult.SuccessRehashNeeded)
         {
             user.PasswordHash = _passwordHasher.HashPassword(user, request.Password);
@@ -94,7 +85,6 @@ public class UserService : IUserService
 
     public async Task<CurrentUserDto> GetCurrentUserAsync(Guid userId)
     {
-        // A valid token for a user that no longer exists (e.g. deleted from the DB) is treated as not logged in.
         var user = await _db.Users.FindAsync(userId)
             ?? throw new UnauthorizedException("User from token no longer exists.");
 
@@ -113,8 +103,6 @@ public class UserService : IUserService
     {
         var pattern = $"%{query.Trim()}%";
 
-        // ILIKE = case-insensitive LIKE (PostgreSQL). Becomes:
-        // WHERE "Username" ILIKE @pattern ORDER BY "Username" LIMIT 20
         return await _db.Users
             .Where(u => EF.Functions.ILike(u.Username, pattern))
             .OrderBy(u => u.Username)

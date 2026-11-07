@@ -3,9 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NEText.Api.Errors;
 
-// Runs whenever an exception escapes a controller (registered in Program.cs).
-// Our own AppExceptions become a clean Problem Details response with their status code.
-// Anything else is left to the framework, which logs it and returns a generic 500.
 public class GlobalExceptionHandler : IExceptionHandler
 {
     private readonly IProblemDetailsService _problemDetails;
@@ -19,7 +16,7 @@ public class GlobalExceptionHandler : IExceptionHandler
     {
         if (exception is not AppException appException)
         {
-            return false; // not ours: let the default handling produce a 500
+            return false;
         }
 
         httpContext.Response.StatusCode = appException.StatusCode;

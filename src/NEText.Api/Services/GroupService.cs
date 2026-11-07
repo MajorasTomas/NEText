@@ -9,7 +9,6 @@ namespace NEText.Api.Services;
 
 public class GroupService : IGroupService
 {
-    // Including the creator.
     private const int MaxMembers = 50;
 
     private readonly AppDbContext _db;
@@ -20,7 +19,7 @@ public class GroupService : IGroupService
     {
         _db = db;
         _friends = friends;
-        _conversations = conversations; // reused to build the ConversationDto
+        _conversations = conversations;
     }
 
     private static readonly Expression<Func<ConversationParticipant, GroupMemberDto>> ToMemberDto = p => new GroupMemberDto(
@@ -33,7 +32,6 @@ public class GroupService : IGroupService
     {
         var groupName = RequireName(name);
 
-        // Ignore duplicates and myself (I'm added anyway).
         var otherIds = memberIds.Distinct().Where(id => id != myId).ToList();
         if (otherIds.Count == 0)
         {
@@ -81,7 +79,6 @@ public class GroupService : IGroupService
     {
         await FindMyMembershipAsync(myId, groupId);
 
-        // C# lets any number be cast to an enum, so "?role=7" would bind to (ParticipantRole)7: reject those.
         if (role is not null && !Enum.IsDefined(role.Value))
         {
             throw new BadRequestException("Unknown role. Use 'Admin' or 'Member'.");
@@ -89,14 +86,13 @@ public class GroupService : IGroupService
 
         var query = _db.ConversationParticipants.Where(p => p.ConversationId == groupId);
 
-        // Optional filter, same idea as includeDeleted on messages.
         if (role is ParticipantRole wanted)
         {
             query = query.Where(p => p.Role == wanted);
         }
 
         return await query
-            .OrderByDescending(p => p.Role == ParticipantRole.Admin) // admins first
+            .OrderByDescending(p => p.Role == ParticipantRole.Admin)
             .ThenBy(p => p.User.Username)
             .Select(ToMemberDto)
             .ToListAsync();
@@ -130,7 +126,7 @@ public class GroupService : IGroupService
             UserId = userId,
             Role = ParticipantRole.Member,
             JoinedAtUtc = now,
-            LastReadAtUtc = now // older messages shouldn't all show up as unread for the new member
+            LastReadAtUtc = now
         });
         await _db.SaveChangesAsync();
 
@@ -162,18 +158,16 @@ public class GroupService : IGroupService
         var others = await _db.ConversationParticipants
             .Where(p => p.ConversationId == groupId && p.UserId != myId)
             .OrderBy(p => p.JoinedAtUtc)
-            .ThenBy(p => p.UserId) // members added at the same moment: still a fixed, predictable order
+            .ThenBy(p => p.UserId)
             .ToListAsync();
 
         if (others.Count == 0)
         {
-            // Last one out: delete the group (cascade removes its messages).
             var group = await _db.Conversations.SingleAsync(c => c.Id == groupId);
             _db.Conversations.Remove(group);
         }
         else if (me.Role == ParticipantRole.Admin && others.All(p => p.Role != ParticipantRole.Admin))
         {
-            // The last admin left: the longest-standing member takes over.
             others[0].Role = ParticipantRole.Admin;
         }
 
@@ -228,12 +222,10 @@ public class GroupService : IGroupService
     {
         var me = await RequireAdminAsync(myId, groupId);
 
-        // Cascade delete removes all participants and messages too.
         _db.Conversations.Remove(me.Conversation);
         await _db.SaveChangesAsync();
     }
 
-    // My membership in a GROUP (tracked, with the conversation loaded). 404 if not a member or not a group.
     private async Task<ConversationParticipant> FindMyMembershipAsync(Guid myId, Guid groupId)
     {
         return await _db.ConversationParticipants

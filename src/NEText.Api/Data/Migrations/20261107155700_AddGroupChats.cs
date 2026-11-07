@@ -24,8 +24,6 @@ namespace NEText.Api.Data.Migrations
                 maxLength: 32,
                 nullable: true);
 
-            // Edited by hand: EF generated defaultValue "" for existing rows, which isn't a valid
-            // ParticipantRole and would fail when read back. Everyone already in a chat is a Member.
             migrationBuilder.AddColumn<string>(
                 name: "Role",
                 table: "ConversationParticipants",

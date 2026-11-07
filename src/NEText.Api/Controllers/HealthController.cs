@@ -2,12 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace NEText.Api.Controllers;
 
-// Simplest possible endpoint: proves the server is running and reachable.
 [ApiController]
-[Route("api/[controller]")] // [controller] = class name without "Controller" -> /api/health
+[Route("api/[controller]")]
 public class HealthController : ControllerBase
 {
-    // GET /api/health
     [HttpGet]
     public IActionResult Get()
     {

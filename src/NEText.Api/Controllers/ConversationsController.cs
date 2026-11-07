@@ -19,7 +19,6 @@ public class ConversationsController : ControllerBase
         _conversations = conversations;
     }
 
-    // POST /api/conversations  { "userId": "..." } -> 201 new conversation, or 200 if it already existed
     [HttpPost]
     public async Task<ActionResult<ConversationDto>> Start([FromBody] StartConversationRequest request)
     {
@@ -27,22 +26,18 @@ public class ConversationsController : ControllerBase
         return created ? StatusCode(StatusCodes.Status201Created, conversation) : Ok(conversation);
     }
 
-    // GET /api/conversations             -> 200 + all my conversations, most recent first
-    // GET /api/conversations?type=Direct -> only 1:1 chats (or ?type=Group for only groups)
     [HttpGet]
     public async Task<ActionResult<List<ConversationDto>>> GetMine([FromQuery] ConversationType? type)
     {
         return Ok(await _conversations.GetMyConversationsAsync(User.GetUserId(), type));
     }
 
-    // GET /api/conversations/{id} -> 200, or 404 if it isn't mine
     [HttpGet("{id:guid}")]
     public async Task<ActionResult<ConversationDto>> Get(Guid id)
     {
         return Ok(await _conversations.GetAsync(User.GetUserId(), id));
     }
 
-    // POST /api/conversations/{id}/read -> 204 (unread count becomes 0)
     [HttpPost("{id:guid}/read")]
     public async Task<IActionResult> MarkAsRead(Guid id)
     {
@@ -50,15 +45,12 @@ public class ConversationsController : ControllerBase
         return NoContent();
     }
 
-    // GET /api/conversations/{id}/messages?limit=50&before={messageId}&includeDeleted=false&unreadOnly=true
-    //   -> 200 + messages, newest first. All query parameters are optional (see MessageListQuery).
     [HttpGet("{id:guid}/messages")]
     public async Task<ActionResult<List<MessageDto>>> GetMessages(Guid id, [FromQuery] MessageListQuery query)
     {
         return Ok(await _conversations.GetMessagesAsync(User.GetUserId(), id, query));
     }
 
-    // POST /api/conversations/{id}/messages  { "text": "hi" } -> 201 + message
     [HttpPost("{id:guid}/messages")]
     public async Task<ActionResult<MessageDto>> SendMessage(Guid id, [FromBody] SendMessageRequest request)
     {
