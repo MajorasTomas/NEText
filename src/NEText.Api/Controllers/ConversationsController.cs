@@ -49,14 +49,16 @@ public class ConversationsController : ControllerBase
         return NoContent();
     }
 
-    // GET /api/conversations/{id}/messages?limit=50&before={messageId} -> 200 + messages, newest first
+    // GET /api/conversations/{id}/messages?limit=50&before={messageId}&includeDeleted=false
+    //   -> 200 + messages, newest first. includeDeleted defaults to true (deleted ones shown as placeholders).
     [HttpGet("{id:guid}/messages")]
     public async Task<ActionResult<List<MessageDto>>> GetMessages(
         Guid id,
         [FromQuery] Guid? before,
-        [FromQuery, Range(1, 100)] int limit = 50)
+        [FromQuery, Range(1, 100)] int limit = 50,
+        [FromQuery] bool includeDeleted = true)
     {
-        return Ok(await _conversations.GetMessagesAsync(User.GetUserId(), id, before, limit));
+        return Ok(await _conversations.GetMessagesAsync(User.GetUserId(), id, before, limit, includeDeleted));
     }
 
     // POST /api/conversations/{id}/messages  { "text": "hi" } -> 201 + message

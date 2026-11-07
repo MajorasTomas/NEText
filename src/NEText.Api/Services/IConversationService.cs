@@ -19,7 +19,8 @@ public interface IConversationService
     Task MarkAsReadAsync(Guid myId, Guid conversationId);
 
     // Newest first, at most "limit". Pass the id of the oldest message you have as "before" to get older ones.
-    Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, Guid? before, int limit);
+    // includeDeleted = false leaves out deleted messages (by default they're returned as placeholders).
+    Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, Guid? before, int limit, bool includeDeleted);
 
     // 403 if the other user is no longer a friend (history stays readable, no new messages).
     Task<MessageDto> SendMessageAsync(Guid myId, Guid conversationId, string text);

@@ -350,6 +350,21 @@
           }
         },
         {
+          "name": "Get messages (without deleted)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=50&includeDeleted=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversations", "{{conversationId}}", "messages"],
+              "query": [
+                { "key": "limit", "value": "50" },
+                { "key": "includeDeleted", "value": "false" }
+              ]
+            }
+          }
+        },
+        {
           "name": "Get older messages (before)",
           "request": {
             "description": "Set 'before' to the id of the OLDEST message you already have (the last item of the previous page).",

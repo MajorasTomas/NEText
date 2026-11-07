@@ -99,11 +99,17 @@ public class ConversationService : IConversationService
         await _db.SaveChangesAsync();
     }
 
-    public async Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, Guid? before, int limit)
+    public async Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, Guid? before, int limit, bool includeDeleted)
     {
         await FindMyParticipationAsync(myId, conversationId); // 404 if it's not my conversation
 
         var query = _db.Messages.Where(m => m.ConversationId == conversationId);
+
+        // Optional filter: leave out "message deleted" placeholders.
+        if (!includeDeleted)
+        {
+            query = query.Where(m => m.DeletedAtUtc == null);
+        }
 
         // Cursor pagination: "messages older than this one". Unlike page numbers, new messages arriving
         // in the meantime don't shift what the next page contains.
