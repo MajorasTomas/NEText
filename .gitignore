@@ -55,3 +55,13 @@ CodeCoverage/
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
+
+# Postman app local sync (the collection lives in postman/NEText.postman_collection.json)
+.postman/
+postman/collections/
+postman/globals/
+postman/documents/
+postman/environments/
+postman/flows/
+postman/mocks/
+postman/specs/

@@ -82,7 +82,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"username\": \"alice\",\n  \"password\": \"password123\"\n}",
+              "raw": "{\n  \"email\": \"justinas@example.com\",\n  \"username\": \"justinas\",\n  \"password\": \"password123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -121,7 +121,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}",
+              "raw": "{\n  \"email\": \"justinas@example.com\",\n  \"password\": \"password123\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -413,7 +413,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"text\": \"Hi! How are you?\"\n}",
+              "raw": "{\n  \"text\": \"test message\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -539,7 +539,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"text\": \"Hi! How are you doing?\"\n}",
+              "raw": "{\n  \"text\": \"edited test message\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -587,7 +587,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Weekend trip\",\n  \"memberIds\": [\n    \"{{userId}}\"\n  ]\n}",
+              "raw": "{\n  \"name\": \"test group\",\n  \"memberIds\": [\n    \"{{userId}}\"\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -715,7 +715,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"nickname\": \"The planner\"\n}",
+              "raw": "{\n  \"nickname\": \"test nickname\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -737,7 +737,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Summer trip\"\n}",
+              "raw": "{\n  \"name\": \"renamed test group\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
