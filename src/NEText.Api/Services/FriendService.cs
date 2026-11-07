@@ -175,6 +175,12 @@ public class FriendService : IFriendService
         await _db.SaveChangesAsync();
     }
 
+    public async Task<bool> AreFriendsAsync(Guid userA, Guid userB)
+    {
+        var request = await FindBetweenAsync(userA, userB);
+        return request?.Status == FriendRequestStatus.Accepted;
+    }
+
     // The single row between two users, whichever of them sent it.
     private Task<FriendRequest?> FindBetweenAsync(Guid userA, Guid userB)
     {

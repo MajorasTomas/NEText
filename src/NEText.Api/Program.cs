@@ -77,6 +77,7 @@ builder.Services.AddSingleton<ITokenService, TokenService>();
 // Our own services. Scoped because they use AppDbContext (also scoped).
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IFriendService, FriendService>();
+builder.Services.AddScoped<IConversationService, ConversationService>();
 
 var app = builder.Build();
 
@@ -84,6 +85,9 @@ var app = builder.Build();
 
 // First in the pipeline, so it catches exceptions thrown by anything after it (including controllers).
 app.UseExceptionHandler();
+// Error responses that have no body (e.g. 401 from the JWT middleware, 404 for unknown URLs, 405 wrong method)
+// get a Problem Details JSON body, so every error looks the same to clients.
+app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {

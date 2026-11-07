@@ -13,7 +13,9 @@
     { "key": "token", "value": "" },
     { "key": "aliceId", "value": "" },
     { "key": "bobId", "value": "" },
-    { "key": "requestId", "value": "" }
+    { "key": "requestId", "value": "" },
+    { "key": "conversationId", "value": "" },
+    { "key": "messageId", "value": "" }
   ],
   "item": [
     {
@@ -251,6 +253,136 @@
           "request": {
             "method": "DELETE",
             "url": "{{baseUrl}}/api/friends/{{bobId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conversations",
+      "description": "Alice and Bob must be friends to start a conversation. Typical flow: Login (Alice) -> Start conversation (with Bob) -> Send message -> Login (Bob) -> My conversations (unread count) -> Get messages -> Mark as read.",
+      "item": [
+        {
+          "name": "Start conversation (with Bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the conversation id for the requests below ({{conversationId}}). 201 = new, 200 = already existed.",
+                  "if (pm.response.code === 200 || pm.response.code === 201) pm.collectionVariables.set('conversationId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{bobId}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/conversations"
+          }
+        },
+        {
+          "name": "My conversations",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/conversations"
+          }
+        },
+        {
+          "name": "Get conversation",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/conversations/{{conversationId}}"
+          }
+        },
+        {
+          "name": "Mark as read",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/conversations/{{conversationId}}/read"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send message",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the message id for Edit/Delete ({{messageId}})",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('messageId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Hi! How are you?\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/conversations/{{conversationId}}/messages"
+          }
+        },
+        {
+          "name": "Get messages (newest first)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=50",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversations", "{{conversationId}}", "messages"],
+              "query": [{ "key": "limit", "value": "50" }]
+            }
+          }
+        },
+        {
+          "name": "Get older messages (before)",
+          "request": {
+            "description": "Set 'before' to the id of the OLDEST message you already have (the last item of the previous page).",
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=50&before={{messageId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conversations", "{{conversationId}}", "messages"],
+              "query": [
+                { "key": "limit", "value": "50" },
+                { "key": "before", "value": "{{messageId}}" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Edit message",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"text\": \"Hi! How are you doing?\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/messages/{{messageId}}"
+          }
+        },
+        {
+          "name": "Delete message",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/messages/{{messageId}}"
           }
         }
       ]

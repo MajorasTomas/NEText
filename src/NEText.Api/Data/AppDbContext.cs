@@ -13,6 +13,9 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<FriendRequest> FriendRequests => Set<FriendRequest>();
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+    public DbSet<ConversationParticipant> ConversationParticipants => Set<ConversationParticipant>();
+    public DbSet<Message> Messages => Set<Message>();
 
     // Fine-tune how entities map to tables (column sizes, required fields, indexes, relationships).
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -58,6 +61,55 @@ public class AppDbContext : DbContext
 
             // Speeds up "requests sent to me" (the index above already covers lookups by FromUserId).
             entity.HasIndex(request => request.ToUserId);
+        });
+
+        modelBuilder.Entity<Conversation>(entity =>
+        {
+            entity.HasKey(conversation => conversation.Id);
+
+            entity.Property(conversation => conversation.Type)
+                .HasConversion<string>()
+                .HasMaxLength(16);
+        });
+
+        modelBuilder.Entity<ConversationParticipant>(entity =>
+        {
+            // Composite primary key: the pair must be unique, so a user can't be in the same conversation twice.
+            entity.HasKey(participant => new { participant.ConversationId, participant.UserId });
+
+            // Here both sides have navigation properties: Conversation.Participants <-> Participant.Conversation.
+            entity.HasOne(participant => participant.Conversation)
+                .WithMany(conversation => conversation.Participants)
+                .HasForeignKey(participant => participant.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(participant => participant.User)
+                .WithMany()
+                .HasForeignKey(participant => participant.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // "My conversations" looks participants up by UserId (the primary key starts with ConversationId).
+            entity.HasIndex(participant => participant.UserId);
+        });
+
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(message => message.Id);
+
+            entity.Property(message => message.Text).HasMaxLength(4000);
+
+            entity.HasOne(message => message.Conversation)
+                .WithMany(conversation => conversation.Messages)
+                .HasForeignKey(message => message.ConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(message => message.Sender)
+                .WithMany()
+                .HasForeignKey(message => message.SenderId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Loading a conversation's messages newest-first (pagination) uses exactly this index.
+            entity.HasIndex(message => new { message.ConversationId, message.SentAtUtc });
         });
     }
 }

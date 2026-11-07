@@ -28,6 +28,13 @@ public class UnauthorizedException : AppException
         : base(StatusCodes.Status401Unauthorized, "Unauthorized", message) { }
 }
 
+// 403: logged in, but not allowed to do this (e.g. messaging someone who is no longer a friend)
+public class ForbiddenException : AppException
+{
+    public ForbiddenException(string message)
+        : base(StatusCodes.Status403Forbidden, "Forbidden", message) { }
+}
+
 // 404: the requested thing doesn't exist
 public class NotFoundException : AppException
 {

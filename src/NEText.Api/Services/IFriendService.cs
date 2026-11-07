@@ -26,4 +26,7 @@ public interface IFriendService
 
     // Deletes the friendship (either of the two can do it). 404 if not friends.
     Task RemoveFriendAsync(Guid myId, Guid friendUserId);
+
+    // Used by other services (e.g. messaging is only allowed between friends).
+    Task<bool> AreFriendsAsync(Guid userA, Guid userB);
 }
