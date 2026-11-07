@@ -181,6 +181,16 @@ public class FriendService : IFriendService
         return request?.Status == FriendRequestStatus.Accepted;
     }
 
+    public async Task<HashSet<Guid>> GetFriendIdsAsync(Guid myId)
+    {
+        var ids = await _db.FriendRequests
+            .Where(r => r.Status == FriendRequestStatus.Accepted && (r.FromUserId == myId || r.ToUserId == myId))
+            .Select(r => r.FromUserId == myId ? r.ToUserId : r.FromUserId)
+            .ToListAsync();
+
+        return ids.ToHashSet();
+    }
+
     // The single row between two users, whichever of them sent it.
     private Task<FriendRequest?> FindBetweenAsync(Guid userA, Guid userB)
     {

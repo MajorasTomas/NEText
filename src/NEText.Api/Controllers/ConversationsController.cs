@@ -1,8 +1,8 @@
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NEText.Api.Auth;
 using NEText.Api.Dtos;
+using NEText.Api.Entities;
 using NEText.Api.Services;
 
 namespace NEText.Api.Controllers;
@@ -27,11 +27,12 @@ public class ConversationsController : ControllerBase
         return created ? StatusCode(StatusCodes.Status201Created, conversation) : Ok(conversation);
     }
 
-    // GET /api/conversations -> 200 + my conversations, most recent first
+    // GET /api/conversations             -> 200 + all my conversations, most recent first
+    // GET /api/conversations?type=Direct -> only 1:1 chats (or ?type=Group for only groups)
     [HttpGet]
-    public async Task<ActionResult<List<ConversationDto>>> GetMine()
+    public async Task<ActionResult<List<ConversationDto>>> GetMine([FromQuery] ConversationType? type)
     {
-        return Ok(await _conversations.GetMyConversationsAsync(User.GetUserId()));
+        return Ok(await _conversations.GetMyConversationsAsync(User.GetUserId(), type));
     }
 
     // GET /api/conversations/{id} -> 200, or 404 if it isn't mine
@@ -49,16 +50,12 @@ public class ConversationsController : ControllerBase
         return NoContent();
     }
 
-    // GET /api/conversations/{id}/messages?limit=50&before={messageId}&includeDeleted=false
-    //   -> 200 + messages, newest first. includeDeleted defaults to true (deleted ones shown as placeholders).
+    // GET /api/conversations/{id}/messages?limit=50&before={messageId}&includeDeleted=false&unreadOnly=true
+    //   -> 200 + messages, newest first. All query parameters are optional (see MessageListQuery).
     [HttpGet("{id:guid}/messages")]
-    public async Task<ActionResult<List<MessageDto>>> GetMessages(
-        Guid id,
-        [FromQuery] Guid? before,
-        [FromQuery, Range(1, 100)] int limit = 50,
-        [FromQuery] bool includeDeleted = true)
+    public async Task<ActionResult<List<MessageDto>>> GetMessages(Guid id, [FromQuery] MessageListQuery query)
     {
-        return Ok(await _conversations.GetMessagesAsync(User.GetUserId(), id, before, limit, includeDeleted));
+        return Ok(await _conversations.GetMessagesAsync(User.GetUserId(), id, query));
     }
 
     // POST /api/conversations/{id}/messages  { "text": "hi" } -> 201 + message

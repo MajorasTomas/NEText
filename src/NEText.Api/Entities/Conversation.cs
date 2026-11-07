@@ -8,6 +8,9 @@ public class Conversation
 
     public ConversationType Type { get; set; }
 
+    // Groups only (null for direct chats).
+    public string? Name { get; set; }
+
     public DateTime CreatedAtUtc { get; set; }
 
     // Updated on every new message, so "my conversations" can be sorted by latest activity cheaply.
@@ -22,5 +25,5 @@ public class Conversation
 public enum ConversationType
 {
     Direct, // exactly two people, who must be friends to message each other
-    Group   // not built yet; membership alone allows messaging
+    Group   // has a name and admins; membership alone allows messaging
 }

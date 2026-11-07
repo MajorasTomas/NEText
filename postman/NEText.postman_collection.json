@@ -6,16 +6,51 @@
   },
   "auth": {
     "type": "bearer",
-    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5180" },
-    { "key": "token", "value": "" },
-    { "key": "aliceId", "value": "" },
-    { "key": "bobId", "value": "" },
-    { "key": "requestId", "value": "" },
-    { "key": "conversationId", "value": "" },
-    { "key": "messageId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5180"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "aliceId",
+      "value": ""
+    },
+    {
+      "key": "bobId",
+      "value": ""
+    },
+    {
+      "key": "requestId",
+      "value": ""
+    },
+    {
+      "key": "conversationId",
+      "value": ""
+    },
+    {
+      "key": "messageId",
+      "value": ""
+    },
+    {
+      "key": "carolId",
+      "value": ""
+    },
+    {
+      "key": "groupId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -24,7 +59,9 @@
         {
           "name": "Health check",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "GET",
             "url": "{{baseUrl}}/api/health"
           }
@@ -49,13 +86,24 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"alice@example.com\",\n  \"username\": \"Alice\",\n  \"password\": \"password123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/auth/register"
           }
@@ -75,13 +123,61 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"bob@example.com\",\n  \"username\": \"bob\",\n  \"password\": \"password123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/auth/register"
+          }
+        },
+        {
+          "name": "Register (Carol)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the new user's id for other requests ({{carolId}})",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('carolId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carol@example.com\",\n  \"username\": \"carol\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/auth/register"
           }
@@ -104,13 +200,24 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"alice@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/auth/login"
           }
@@ -133,13 +240,64 @@
             }
           ],
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "noauth"
+            },
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"bob@example.com\",\n  \"password\": \"password123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/auth/login"
+          }
+        },
+        {
+          "name": "Login (Carol)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the token: every request in the collection sends it as 'Authorization: Bearer {{token}}'",
+                  "if (pm.response.code === 200) {",
+                  "  pm.collectionVariables.set('token', pm.response.json().accessToken);",
+                  "  pm.collectionVariables.set('carolId', pm.response.json().user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"carol@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/auth/login"
           }
@@ -169,9 +327,20 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/users/search?q=al",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "users", "search"],
-              "query": [{ "key": "q", "value": "al" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "al"
+                }
+              ]
             }
           }
         }
@@ -197,11 +366,54 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"toUserId\": \"{{bobId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/friend-requests"
+          }
+        },
+        {
+          "name": "Send request (to Carol)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the request id for Accept/Decline/Cancel ({{requestId}})",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('requestId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"toUserId\": \"{{carolId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/friend-requests"
           }
@@ -277,11 +489,20 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"userId\": \"{{bobId}}\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/conversations"
           }
@@ -291,6 +512,50 @@
           "request": {
             "method": "GET",
             "url": "{{baseUrl}}/api/conversations"
+          }
+        },
+        {
+          "name": "My direct chats",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations?type=Direct",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "conversations"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "Direct"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "My groups",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations?type=Group",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "conversations"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "Group"
+                }
+              ]
+            }
           }
         },
         {
@@ -328,11 +593,20 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"text\": \"Hi! How are you?\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/conversations/{{conversationId}}/messages"
           }
@@ -343,9 +617,21 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=50",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "conversations", "{{conversationId}}", "messages"],
-              "query": [{ "key": "limit", "value": "50" }]
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "conversations",
+                "{{conversationId}}",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "50"
+                }
+              ]
             }
           }
         },
@@ -355,11 +641,49 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=50&includeDeleted=false",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "conversations", "{{conversationId}}", "messages"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "conversations",
+                "{{conversationId}}",
+                "messages"
+              ],
               "query": [
-                { "key": "limit", "value": "50" },
-                { "key": "includeDeleted", "value": "false" }
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "includeDeleted",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get unread messages",
+          "request": {
+            "description": "Messages from others sent after you last used Mark as read. Does not mark them as read.",
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?unreadOnly=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "conversations",
+                "{{conversationId}}",
+                "messages"
+              ],
+              "query": [
+                {
+                  "key": "unreadOnly",
+                  "value": "true"
+                }
               ]
             }
           }
@@ -371,11 +695,24 @@
             "method": "GET",
             "url": {
               "raw": "{{baseUrl}}/api/conversations/{{conversationId}}/messages?limit=50&before={{messageId}}",
-              "host": ["{{baseUrl}}"],
-              "path": ["api", "conversations", "{{conversationId}}", "messages"],
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "conversations",
+                "{{conversationId}}",
+                "messages"
+              ],
               "query": [
-                { "key": "limit", "value": "50" },
-                { "key": "before", "value": "{{messageId}}" }
+                {
+                  "key": "limit",
+                  "value": "50"
+                },
+                {
+                  "key": "before",
+                  "value": "{{messageId}}"
+                }
               ]
             }
           }
@@ -384,11 +721,20 @@
           "name": "Edit message",
           "request": {
             "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"text\": \"Hi! How are you doing?\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
             "url": "{{baseUrl}}/api/messages/{{messageId}}"
           }
@@ -398,6 +744,235 @@
           "request": {
             "method": "DELETE",
             "url": "{{baseUrl}}/api/messages/{{messageId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "description": "A group is a conversation: after creating one, the Messages folder and 'Mark as read' work on it (Create group also sets {{conversationId}}). Admin-only: add/remove members, rename, change roles, delete. You can only add your friends. Typical flow: make Alice friends with Bob and Carol, Login (Alice) -> Create group (with Bob) -> Add member (Carol) -> Send message -> Login (Carol) -> Send message.",
+      "item": [
+        {
+          "name": "Create group (with Bob)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Save the group id ({{groupId}}) and make it the current conversation for the Messages folder",
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('groupId', pm.response.json().id);",
+                  "  pm.collectionVariables.set('conversationId', pm.response.json().id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Weekend trip\",\n  \"memberIds\": [\"{{bobId}}\"]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/groups"
+          }
+        },
+        {
+          "name": "Group members",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members"
+          }
+        },
+        {
+          "name": "Group admins",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/groups/{{groupId}}/members?role=Admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "groups",
+                "{{groupId}}",
+                "members"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "Admin"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Group members (only Members)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/groups/{{groupId}}/members?role=Member",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "groups",
+                "{{groupId}}",
+                "members"
+              ],
+              "query": [
+                {
+                  "key": "role",
+                  "value": "Member"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add member (Carol)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{carolId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members"
+          }
+        },
+        {
+          "name": "Remove member (Carol)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{carolId}}"
+          }
+        },
+        {
+          "name": "Make admin (Bob)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Admin\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{bobId}}/role"
+          }
+        },
+        {
+          "name": "Make member (Bob)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"Member\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/{{bobId}}/role"
+          }
+        },
+        {
+          "name": "Set my nickname",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"The planner\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/members/me/nickname"
+          }
+        },
+        {
+          "name": "Rename group",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Summer trip\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": "{{baseUrl}}/api/groups/{{groupId}}"
+          }
+        },
+        {
+          "name": "Leave group",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/groups/{{groupId}}/leave"
+          }
+        },
+        {
+          "name": "Delete group",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/groups/{{groupId}}"
           }
         }
       ]

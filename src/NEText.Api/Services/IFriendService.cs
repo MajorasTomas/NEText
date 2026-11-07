@@ -29,4 +29,7 @@ public interface IFriendService
 
     // Used by other services (e.g. messaging is only allowed between friends).
     Task<bool> AreFriendsAsync(Guid userA, Guid userB);
+
+    // Ids of all my friends, in one query (e.g. to check a whole list of group members at once).
+    Task<HashSet<Guid>> GetFriendIdsAsync(Guid myId);
 }

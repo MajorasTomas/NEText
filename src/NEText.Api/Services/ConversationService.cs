@@ -81,9 +81,9 @@ public class ConversationService : IConversationService
         return (await GetAsync(myId, conversation.Id), true);
     }
 
-    public async Task<List<ConversationDto>> GetMyConversationsAsync(Guid myId)
+    public async Task<List<ConversationDto>> GetMyConversationsAsync(Guid myId, ConversationType? type)
     {
-        return await QueryConversations(myId).ToListAsync();
+        return await QueryConversations(myId, type: type).ToListAsync();
     }
 
     public async Task<ConversationDto> GetAsync(Guid myId, Guid conversationId)
@@ -99,21 +99,31 @@ public class ConversationService : IConversationService
         await _db.SaveChangesAsync();
     }
 
-    public async Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, Guid? before, int limit, bool includeDeleted)
+    public async Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, MessageListQuery options)
     {
-        await FindMyParticipationAsync(myId, conversationId); // 404 if it's not my conversation
+        var me = await FindMyParticipationAsync(myId, conversationId); // 404 if it's not my conversation
 
         var query = _db.Messages.Where(m => m.ConversationId == conversationId);
 
         // Optional filter: leave out "message deleted" placeholders.
-        if (!includeDeleted)
+        if (!options.IncludeDeleted)
         {
             query = query.Where(m => m.DeletedAtUtc == null);
         }
 
+        // Optional filter: only unread. Exactly the rule used for UnreadCount, so the two always match.
+        if (options.UnreadOnly)
+        {
+            query = query.Where(m => m.SenderId != myId && m.DeletedAtUtc == null);
+            if (me.LastReadAtUtc is DateTime lastRead)
+            {
+                query = query.Where(m => m.SentAtUtc > lastRead);
+            }
+        }
+
         // Cursor pagination: "messages older than this one". Unlike page numbers, new messages arriving
         // in the meantime don't shift what the next page contains.
-        if (before is Guid beforeId)
+        if (options.Before is Guid beforeId)
         {
             var cursor = await _db.Messages
                 .Where(m => m.Id == beforeId && m.ConversationId == conversationId)
@@ -126,7 +136,7 @@ public class ConversationService : IConversationService
 
         return await query
             .OrderByDescending(m => m.SentAtUtc)
-            .Take(limit)
+            .Take(options.Limit)
             .Select(ToMessageDto)
             .ToListAsync();
     }
@@ -212,22 +222,31 @@ public class ConversationService : IConversationService
 
     // The ConversationDto query, seen from my side: the other user, the last message and my unread count
     // are all computed by the database in one SQL query (with subqueries).
-    private IQueryable<ConversationDto> QueryConversations(Guid myId, Guid? conversationId = null)
+    private IQueryable<ConversationDto> QueryConversations(Guid myId, Guid? conversationId = null, ConversationType? type = null)
     {
         var mine = _db.ConversationParticipants.Where(p => p.UserId == myId);
         if (conversationId is Guid id)
         {
             mine = mine.Where(p => p.ConversationId == id);
         }
+        if (type is ConversationType wanted)
+        {
+            mine = mine.Where(p => p.Conversation.Type == wanted);
+        }
 
         return mine
             .OrderByDescending(p => p.Conversation.LastMessageAtUtc ?? p.Conversation.CreatedAtUtc)
             .Select(p => new ConversationDto(
                 p.ConversationId,
-                p.Conversation.Participants
-                    .Where(other => other.UserId != myId)
-                    .Select(other => new UserDto(other.User.Id, other.User.Username, other.User.CreatedAtUtc))
-                    .FirstOrDefault()!,
+                p.Conversation.Type,
+                p.Conversation.Name,
+                p.Conversation.Type == ConversationType.Direct
+                    ? p.Conversation.Participants
+                        .Where(other => other.UserId != myId)
+                        .Select(other => new UserDto(other.User.Id, other.User.Username, other.User.CreatedAtUtc))
+                        .FirstOrDefault()
+                    : null,
+                p.Conversation.Participants.Count,
                 p.Conversation.Messages
                     .AsQueryable()            // lets us reuse the ToMessageDto expression inside this query
                     .OrderByDescending(m => m.SentAtUtc)

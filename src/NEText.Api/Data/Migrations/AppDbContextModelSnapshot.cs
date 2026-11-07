@@ -34,6 +34,10 @@ namespace NEText.Api.Data.Migrations
                     b.Property<DateTime?>("LastMessageAtUtc")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Name")
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
                     b.Property<string>("Type")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -57,6 +61,15 @@ namespace NEText.Api.Data.Migrations
 
                     b.Property<DateTime?>("LastReadAtUtc")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Nickname")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
 
                     b.HasKey("ConversationId", "UserId");
 

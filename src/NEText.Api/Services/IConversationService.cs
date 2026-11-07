@@ -1,4 +1,5 @@
 using NEText.Api.Dtos;
+using NEText.Api.Entities;
 
 namespace NEText.Api.Services;
 
@@ -10,17 +11,16 @@ public interface IConversationService
     // Created = true if a new conversation was made (controller answers 201 instead of 200).
     Task<(ConversationDto Conversation, bool Created)> StartAsync(Guid myId, Guid otherUserId);
 
-    // My conversations, most recent activity first.
-    Task<List<ConversationDto>> GetMyConversationsAsync(Guid myId);
+    // My conversations, most recent activity first. type = null returns both direct chats and groups.
+    Task<List<ConversationDto>> GetMyConversationsAsync(Guid myId, ConversationType? type);
 
     Task<ConversationDto> GetAsync(Guid myId, Guid conversationId);
 
     // Everything sent until now counts as read for me.
     Task MarkAsReadAsync(Guid myId, Guid conversationId);
 
-    // Newest first, at most "limit". Pass the id of the oldest message you have as "before" to get older ones.
-    // includeDeleted = false leaves out deleted messages (by default they're returned as placeholders).
-    Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, Guid? before, int limit, bool includeDeleted);
+    // Newest first. Paging (Before, Limit) and filters (IncludeDeleted, UnreadOnly) come from MessageListQuery.
+    Task<List<MessageDto>> GetMessagesAsync(Guid myId, Guid conversationId, MessageListQuery options);
 
     // 403 if the other user is no longer a friend (history stays readable, no new messages).
     Task<MessageDto> SendMessageAsync(Guid myId, Guid conversationId, string text);

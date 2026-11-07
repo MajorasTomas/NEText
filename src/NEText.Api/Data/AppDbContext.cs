@@ -70,12 +70,20 @@ public class AppDbContext : DbContext
             entity.Property(conversation => conversation.Type)
                 .HasConversion<string>()
                 .HasMaxLength(16);
+
+            entity.Property(conversation => conversation.Name).HasMaxLength(64);
         });
 
         modelBuilder.Entity<ConversationParticipant>(entity =>
         {
             // Composite primary key: the pair must be unique, so a user can't be in the same conversation twice.
             entity.HasKey(participant => new { participant.ConversationId, participant.UserId });
+
+            entity.Property(participant => participant.Role)
+                .HasConversion<string>()
+                .HasMaxLength(16);
+
+            entity.Property(participant => participant.Nickname).HasMaxLength(32);
 
             // Here both sides have navigation properties: Conversation.Participants <-> Participant.Conversation.
             entity.HasOne(participant => participant.Conversation)
