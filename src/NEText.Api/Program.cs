@@ -8,6 +8,7 @@ using NEText.Api.Auth;
 using NEText.Api.Data;
 using NEText.Api.Entities;
 using NEText.Api.Errors;
+using NEText.Api.OpenApi;
 using NEText.Api.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,7 +16,17 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddRouting(options => options.LowercaseUrls = true);
-builder.Services.AddOpenApi();
+builder.Services.AddOpenApi(options =>
+{
+    options.AddDocumentTransformer((document, context, cancellationToken) =>
+    {
+        document.Info.Title = "NEText API";
+        document.Info.Description = "Messenger API: auth, users, friends, direct chats, groups and messages.";
+        return Task.CompletedTask;
+    });
+    options.AddDocumentTransformer<BearerSecurityTransformer>();
+    options.AddOperationTransformer<BearerSecurityTransformer>();
+});
 
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -70,6 +81,11 @@ app.UseStatusCodePages();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+    {
+        options.SwaggerEndpoint("/openapi/v1.json", "NEText API");
+        options.DocumentTitle = "NEText API";
+    });
 }
 else
 {

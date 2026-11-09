@@ -22,6 +22,8 @@ dotnet ef database update --project src/NEText.Api
 dotnet run --project src/NEText.Api
 ```
 
+API documentation (Development only): http://localhost:5180/swagger lists every endpoint and lets you try them. Log in with `POST /api/auth/login`, copy the `accessToken`, click **Authorize** and paste it to call the protected endpoints. The raw OpenAPI document is at http://localhost:5180/openapi/v1.json.
+
 Testing: import `postman/NEText.postman_collection.json` into Postman. Register, then Login (saves the token used by all other requests).
 
 Stop the database with `docker compose down` (data is kept). `docker compose down -v` deletes all data.
